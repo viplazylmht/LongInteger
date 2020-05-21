@@ -5,7 +5,7 @@
 using namespace std;
 
 // KEEP IN MIND: NUMBER_OF_BIT luon la boi so cua 32, nhung bao nhiu cung duoc (64, 96, 128, ...)
-#define NUMBER_OF_BIT 64
+#define NUMBER_OF_BIT 128
 
 #define N_BYTE NUMBER_OF_BIT / 8
 #define N_UINT NUMBER_OF_BIT / 32
@@ -71,6 +71,7 @@ public:
     string toBinStr();
     string toDecStr();
     string toHexStr();
+    string exportData(int base);
 
     // operator
     QInt& operator=(QInt const&);
@@ -84,4 +85,5 @@ private:
     // input is a char, return a byte (but take only 4 bit aka from 0b00000000 -> 0b00001111)
     // ex: 'a' -> 0b00001010
     char hex2bin(char);
+    string bin2hex(unsigned char const&);
 };

@@ -55,17 +55,35 @@ string QInt::toBinStr()
 
 string QInt::toDecStr()
 {
-    return string();
+    return string("base 10 is not fully support");
 }
 
 string QInt::toHexStr()
 {
     stringstream temp;
-    for (int j = 0; j < N_UINT; ++j)
+    bool startPrint = false;
+
+    for (int j = 0; j < N_BYTE; ++j)
     {
-        if (data.int32[j] != 0)
+        char c = data.byteAt(j);
+
+        if (startPrint || c != 0)
         {
-            temp << hex << data.int32[j];
+            startPrint = true;
+            string bt = bin2hex(c);
+
+            if (bt.length() == 2) {
+                temp << bt;
+                continue;
+            }
+
+            if (bt.length() == 0) {
+                temp << "00";
+            }
+            else {
+                // bt.length() == 1
+                temp << 0 << bt;
+            }
         }
     }
 
@@ -80,6 +98,22 @@ string QInt::toHexStr()
     }
 
     return str;
+}
+
+string QInt::exportData(int base)
+{
+    switch (base)
+    {
+    case BIN:
+        return toBinStr();
+        
+    case HEX:
+        return toHexStr();
+        
+    // return in Decimal by default
+    default:
+        return toDecStr();
+    }
 }
 
 QInt& QInt::operator=(QInt const& other)
@@ -155,6 +189,36 @@ char QInt::hex2bin(char c)
 
     // return 0 if c is not valid hex code 
     return res;
+}
+
+string QInt::bin2hex(unsigned char const& c)
+{
+    stringstream out;
+    // mo
+    char l = c >> 4;
+    if (l != 0) {
+        if (l < 10) {
+            out << (char)(l + '0');
+        }
+        else {
+            out << (char)(l + 'A' - 10);
+        }
+    }
+    // lo
+    char r = c & 0b00001111;
+    if (r != 0) {
+        if (r < 10) {
+            out << (char)(r + '0');
+        }
+        else {
+            out << (char)(r + 'A' - 10);
+        }
+    }
+    else {
+        if (out.str().length() == 1) out << 0;
+    }
+
+    return out.str();
 }
 
 void QInt::SHL(int count)

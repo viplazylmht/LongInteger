@@ -1,25 +1,23 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
-#include "QInt.h"
+#include "RWFile.h"
 
 using namespace std;
 
 
 int main()
 {
-    QInt demo("1111010010101110", BIN);
-    QInt test("092EE35ACF4716A6F4AE", HEX);
+    
+    RWFile rw("input.txt", "output.txt");
+    rw.Start();
 
-    cout << "Size of QInt: " << sizeof(demo) << endl;
-    cout << demo.toString();
-    cout << test.toString();
+    rw.WriteFile();
+    /*QInt t1("1C7D", 16);
+    t1.ROR();
+    QInt t2("80000000000000000000000000000E3E", 16);
 
-    demo.ROR();
-    cout << "ROR demo: \n" << demo.toString();
-
-    test.ROL();
-    cout << "ROL test: \n" << test.toString();
-
+    cout << t1.toHexStr() << endl
+        << t2.toBinStr() << endl;*/
     return 0;
 }
