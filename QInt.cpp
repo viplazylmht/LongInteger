@@ -23,17 +23,22 @@ string QInt::toString()
     stringstream out;
     
     out << "BIN: ";
-
-    out << toBinStr() << endl;
+    out << exportData(BIN) << endl;
 
     out << "HEX: ";
-    out << toHexStr() << endl;
-
+    out << exportData(HEX) << endl;
+    
     return out.str();
 }
 
 string QInt::toBinStr()
 {
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
+
     stringstream  out;
 
     for (int j = 0; j < N_UINT; ++j)
@@ -55,11 +60,21 @@ string QInt::toBinStr()
 
 string QInt::toDecStr()
 {
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+    
     return string("base 10 is not fully support");
 }
 
 string QInt::toHexStr()
 {
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
     stringstream temp;
     bool startPrint = false;
 
@@ -125,6 +140,50 @@ QInt& QInt::operator=(QInt const& other)
     }
 
     return *this;
+}
+
+bool QInt::operator==(QInt const& other)
+{
+    if (&other == this) return true;
+
+    bool res = true;
+    for (int i = 0; i < N_UINT; ++i)
+    {
+        res = (this->data.int32[i] == other.data.int32[i]) & res;
+    }
+
+    return res;
+}
+
+bool QInt::operator==(long long const& n)
+{
+    QInt t = n;
+    return (*this == t);
+}
+
+QInt::QInt(long long const& n)
+{
+    // long long take only 8 low byte (right side)
+
+    unsigned int low = ((n << 32) >> 32);
+    unsigned int high = (n >> 32); // n >> 32 here is SAR because n is signed
+
+    data.int32[N_UINT - 1] = low;
+    data.int32[N_UINT - 2] = high;
+
+    int mask = 0;
+
+    // check sign of n
+    if ((high >> 31) == 1) // SHR because high is unsigned
+    {
+        // negative number
+        mask = -1;
+    }
+
+    for (int i = 0; i < N_UINT - 2; ++i)
+    {
+        data.int32[i] = mask;
+    }
 }
 
 QInt const QInt::operator<<(int count)

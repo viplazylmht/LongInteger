@@ -38,6 +38,7 @@ public:
     //decode text to object
     QInt(string text, int op);
     QInt(QInt const&);
+    QInt(long long const& n);
 
     //------ utils ------//
 
@@ -75,6 +76,9 @@ public:
 
     // operator
     QInt& operator=(QInt const&);
+    bool operator==(QInt const&);
+    bool operator==(long long const&); 
+
     QInt const operator<<(int);
     QInt const operator>>(int);
     QInt const operator|(QInt const&);
