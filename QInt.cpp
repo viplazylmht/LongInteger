@@ -18,7 +18,7 @@ void QInt::setBit(int const& pos, bool const& val)
 	}
 	else {
 		// gan gia tri 0
-		*reg = *reg & !(1 << i);
+		*reg = *reg & ~(1 << i);
 	}
 }
 
@@ -64,28 +64,30 @@ string QInt::toBinStr()
 
 	return str.substr(i);
 }
-string QInt::DectoBin(string s)
+QInt QInt::DectoBin(string s)
 {
 	int kt = 0;//kiem tra so am
-	string res = "";
+	QInt res;
 	if (s[0] == '-')
 	{
 		s.erase(0, 1);
 		kt = 1;
 	}
-	int i = N_UINT * 32 - 1;
-	while (s != "")
+	int i = 0;
+	while (s != "0")
 	{
 		int bit = (s[s.length() - 1] - '0') % 2;
-		setBit(i, bit);
+		res.setBit(i, bit);
 		s = div2(s);
-		res += bit + '0';
+		//res += bit + '0';
+		i++;
 	}
-	reverse(res.begin(),res.end());
+	//reverse(res.begin(),res.end());
 
 	if (kt == 1)
 	{
 		//chuyen qua bu 2
+		res = res.convert();
 	}
 	
 	return res;
@@ -110,14 +112,15 @@ bool QInt::QInt::isZero() const
 string QInt::toDecStr()
 {
 	QInt p = *this;
-	string s = p.toBinStr();
+	//string s = p.toBinStr();
 	int kt = 0;
-	if (isNegative())
+	if (p.isNegative())
 	{
-		//chuyen qua bu 2 da
+		p = p.convert();
 		kt = 1;
 	}
-	//la so duong
+	//p luc nay la so duong
+	string s = p.toBinStr();
 	int pos = 0;
 	for (int i = 0; i < s.length(); i++)
 	{
@@ -219,8 +222,7 @@ QInt::QInt(string text, int op)
         break;
 	case DEC:
 	{
-		string s = DectoBin(text);
-		*this = QInt(s, BIN);
+		*this = DectoBin(text);
 	}
     default:
         break;
@@ -253,7 +255,7 @@ QInt QInt::operator+ (QInt& A)
 {
 	QInt result;
 	if (isZero())
-		return *this;
+		return A;
 	bool cr = 0;
 	for (int i = 0; i < N_UINT * 32; i++)
 	{
@@ -295,12 +297,29 @@ QInt QInt::convert()
 	QInt res;
 	if (isZero())
 		return *this;
-	//bu 1
-	res = ~(*this);
-	cout << res.toBinStr();
-	QInt temp("1", BIN);
-	//cong them 1 de duoc so bu 2
-	res = res + temp;
+	if (isNegative())//la so -
+	{
+		//tru 1
+		QInt tru1;
+		for (int i = 0; i < N_BYTE - 1; ++i)
+		{
+			tru1.data.byteAt(i) = 0b11111111;
+		}
+
+		res = res + tru1;
+		res = ~res;
+		//dao bit
+	}
+	else
+	{
+		//bu 1
+		res = ~(*this);
+		//cout << res.toBinStr();
+		QInt temp("1", BIN);
+		//cong them 1 de duoc so bu 2
+		res = res + temp;
+	}
+
 	return res;
 }
 QInt QInt::operator- (QInt& A)

@@ -55,7 +55,7 @@ public:
 	string toDecStr();
 	//string toHexStr();
 
-	string DectoBin(string);
+	QInt DectoBin(string);
     // Shift Left Logical
     void SHL(int count);
     

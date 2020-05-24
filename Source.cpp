@@ -13,9 +13,13 @@ int main()
     QInt test = demo;
 
 	QInt demo1("123", DEC);
+	QInt demo2("1", DEC);
 
-    cout << "Size of QInt: " << sizeof(demo) << endl;
-    cout << test.toString();
-	cout << demo1.toString();
+	demo1.setBit(7, 0);
+	cout << demo1.toString() << endl;
+	cout << demo1.getBit(0) << " - " << demo1.getBit(1) << endl;
+
+	cout << demo2.toString();
+	cout << (demo1 + demo2).toString();
     return 0;
 }
