@@ -12,7 +12,10 @@ int main()
 
     QInt test = demo;
 
+	QInt demo1("123", DEC);
+
     cout << "Size of QInt: " << sizeof(demo) << endl;
     cout << test.toString();
+	cout << demo1.toString();
     return 0;
 }
