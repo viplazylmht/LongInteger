@@ -5,7 +5,7 @@
 using namespace std;
 
 // KEEP IN MIND: NUMBER_OF_BIT luon la boi so cua 32, nhung bao nhiu cung duoc (64, 96, 128, ...)
-#define NUMBER_OF_BIT 96
+#define NUMBER_OF_BIT 128
 
 #define N_BYTE NUMBER_OF_BIT / 8
 #define N_UINT NUMBER_OF_BIT / 32
@@ -38,14 +38,56 @@ public:
     //decode text to object
     QInt(string text, int op);
     QInt(QInt const&);
+    QInt(long long const& n);
 
-    // utils
+    //------ utils ------//
 
     // Shift Left Logical
     void SHL(int count);
-    string toString();
+
+    // Shift Right Logical
+    void SHR(int count);
+
+    // Shift Arithmetic Right
+    void SAR(int count);
+
+    // Shift Arithmetic Right
+    void SAL(int count);
+    
+    // Rotation Left
+    void ROL(int count = 1);
+
+    // Rotation Right
+    void ROR(int count = 1);
+    
+    // set pit at pos to content of val (1 by default)
+    void setBit(int const& pos, bool const& val = 1);
+
+    // set all bit to 0
     void clearBit();
+
+    // make printable object (not dump)
+    string toString();
+    
+    string toBinStr();
+    string toDecStr();
+    string toHexStr();
+    string exportData(int base);
 
     // operator
     QInt& operator=(QInt const&);
+    bool operator==(QInt const&);
+    bool operator==(long long const&); 
+
+    QInt const operator<<(int);
+    QInt const operator>>(int);
+    QInt const operator|(QInt const&);
+    QInt const operator&(QInt const&);
+
+private:
+    // convert a character from hex to bin
+    // input is a char, return a byte (but take only 4 bit aka from 0b00000000 -> 0b00001111)
+    // ex: 'a' -> 0b00001010
+    char hex2bin(char);
+    string bin2hex(unsigned char const&);
 };

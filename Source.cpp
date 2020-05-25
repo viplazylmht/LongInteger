@@ -2,17 +2,24 @@
 #include <iostream>
 #include <sstream>
 #include "QInt.h"
+#include "RWFile.h"
 
 using namespace std;
 
 
 int main()
 {
-    QInt demo("10101110", BIN);
+    
+    //RWFile rw("input.txt", "output.txt");
+    //rw.Start();
 
-    QInt test = demo;
-
-    cout << "Size of QInt: " << sizeof(demo) << endl;
-    cout << test.toString();
+    //rw.WriteFile();
+    
+    QInt t1("0", 16);
+    QInt t2 = 17;
+    QInt t3 = 0;
+    
+    cout << t3.exportData(HEX) << endl;
+    cout << t3.exportData(BIN) << endl;
     return 0;
 }
