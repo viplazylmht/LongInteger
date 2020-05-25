@@ -87,7 +87,6 @@ public:
 	QInt operator^ (const QInt&) const;
 	QInt operator~ () const;
 
-
 	// kiem tra so am
 	bool isNegative();
 
@@ -111,6 +110,8 @@ public:
     QInt const operator|(QInt const&);
     QInt const operator&(QInt const&);
 
+    static QInt MIN_VALUE();
+    static QInt MAX_VALUE();
 private:
     // convert a character from hex to bin
     // input is a char, return a byte (but take only 4 bit aka from 0b00000000 -> 0b00001111)

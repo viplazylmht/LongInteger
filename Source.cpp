@@ -7,18 +7,29 @@
 using namespace std;
 
 
-int main()
+int main(int argc, char** argv)
 {
-    QInt demoBIN("01111011", BIN);
-    QInt demoHEX("7B", HEX);
-    QInt demoDEC("123", DEC);
+	if (argc == 3)
+	{
+		// read instruction from command line
+		char* input = argv[1];
+		char* output = argv[2];
+		RWFile rw(input, output);
+		rw.Start();
 
-	cout << demoBIN.toString();
-	cout << demoHEX.toString();
-	cout << demoDEC.toString();
+		rw.WriteFile();
+	}
+
+	QInt t = 0;
+	for (int i = 0; i < 80; ++i)
+	{
+		if (i % 2 == 0 || i % 5 == 0) t.setBit(i);
+	}
+	//t.ROR();
 	
-	QInt t = 100;
-	cout << (demoDEC - t).toString();
+	cout << t.toString();
 
+	cout << "MIN: \n" << QInt::MIN_VALUE().toString();
+	cout << "MAX: \n" << QInt::MAX_VALUE().toString();
 	return 0;
 }
