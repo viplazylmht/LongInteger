@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include<string>
 using namespace std;
 
 // KEEP IN MIND: NUMBER_OF_BIT luon la boi so cua 32, nhung bao nhiu cung duoc (64, 96, 128, ...)
@@ -36,12 +37,20 @@ public:
 
 public:
     //decode text to object
+	QInt();
     QInt(string text, int op);
     QInt(QInt const&);
     QInt(long long const& n);
 
     //------ utils ------//
 
+	// set pit at pos to content of val (1 by default)
+	void setBit(int const& pos, bool const& val = 1);
+
+	//get bit at pos
+	bool getBit(int pos);
+
+	QInt DectoBin(string);
     // Shift Left Logical
     void SHL(int count);
 
@@ -60,9 +69,6 @@ public:
     // Rotation Right
     void ROR(int count = 1);
     
-    // set pit at pos to content of val (1 by default)
-    void setBit(int const& pos, bool const& val = 1);
-
     // set all bit to 0
     void clearBit();
 
@@ -76,6 +82,27 @@ public:
 
     // operator
     QInt& operator=(QInt const&);
+	QInt operator+ (QInt&);
+	QInt operator- (QInt&);
+	QInt operator^ (const QInt&) const;
+	QInt operator~ () const;
+
+
+	// kiem tra so am
+	bool isNegative();
+
+	//kiem tra bang 0
+	bool isZero() const;
+
+	//chuyen doi so qua bu 2
+	QInt convert();
+
+	//Ham chia 2
+	string div2(string);
+
+	//Ham nhan 2
+	string mul2(string s, int pos);
+
     bool operator==(QInt const&);
     bool operator==(long long const&); 
 

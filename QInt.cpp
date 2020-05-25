@@ -1,23 +1,35 @@
 #include "QInt.h"
 
+QInt::QInt()
+{
+	clearBit();
+}
 void QInt::setBit(int const& pos, bool const& val)
 {
-    if (pos < 0 || pos >= NUMBER_OF_BIT) return;
+	if (pos < 0 || pos >= NUMBER_OF_BIT) return;
 
-    unsigned int* reg = &data.int32[N_UINT - 1 - pos / 32];
-    
-    int i = pos % 32;
+	unsigned int* reg = &data.int32[N_UINT - 1 - pos / 32];
 
-    if (val) {
-        // gan gia tri 1
-        *reg = *reg | (1 << i);
-    }
-    else {
-        // gan gia tri 0
-        *reg = *reg & ~(1 << i);
-    }
+	int i = pos % 32;
+
+	if (val) {
+		// gan gia tri 1
+		*reg = *reg | (1 << i);
+	}
+	else {
+		// gan gia tri 0
+		*reg = *reg & ~(1 << i);
+	}
 }
 
+bool QInt::getBit(int pos)
+{
+	//if (pos < 0 || pos >= NUMBER_OF_BIT) return ;
+
+	int i = pos % 32;
+
+	return ((this->data.int32[N_UINT - 1 - pos / 32]) >> i & 1);
+}
 string QInt::toString()
 {
     stringstream out;
@@ -58,15 +70,6 @@ string QInt::toBinStr()
     return str.substr(i);
 }
 
-string QInt::toDecStr()
-{
-    // if value = 0, this func do not return anything
-    // so we need return "0" if it happen 
-    // this code can be accept to all base
-    if (*this == 0) return "0";
-    
-    return string("base 10 is not fully support");
-}
 
 string QInt::toHexStr()
 {
@@ -128,9 +131,111 @@ string QInt::exportData(int base)
     // return in Decimal by default
     default:
         return toDecStr();
-    }
+    }  
 }
+QInt QInt::DectoBin(string s)
+{
+	int kt = 0;//kiem tra so am
+	QInt res;
+	if (s[0] == '-')
+	{
+		s.erase(0, 1);
+		kt = 1;
+	}
+	int i = 0;
+	while (s != "")
+	{
+		int bit = (s[s.length() - 1] - '0') % 2;
+		res.setBit(i, bit);
+		s = div2(s);
+		//res += bit + '0';
+		i++;
+	}
+	//reverse(res.begin(),res.end());
 
+	if (kt == 1)
+	{
+		//chuyen qua bu 2
+		res = res.convert();
+	}
+	
+	return res;
+}
+bool QInt::isNegative()
+{
+	return ((this->getBit(N_UINT * 32 - 1)) == 1);
+}
+bool QInt::QInt::isZero() const
+{
+	for (int i = 0; i < N_UINT; i++)
+	{
+		if (this->data.int32[i] != 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+//str2->>str10
+string QInt::toDecStr()
+{
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
+	QInt p = *this;
+	//string s = p.toBinStr();
+	int kt = 0;
+	if (p.isNegative())
+	{
+		p = p.convert();
+		kt = 1;
+	}
+	//p luc nay la so duong
+	string s = p.toBinStr();
+	int pos = 0;
+	for (int i = 0; i < s.length(); i++)
+	{
+		if (s[i] == '1')
+		{
+			pos = i;
+			break;
+		}
+	}
+	string res;
+	while (pos < s.length())
+	{
+		int k = s[pos] - '0';
+		res = mul2(res, k);
+		pos++;
+	}
+	if (kt == 1)
+	{
+		res = '-' + res;
+	}
+	return res;
+}
+string QInt::mul2(string s, int pos)
+{
+	string result = "";
+	int c = pos;
+
+	for (int i = s.length() - 1; i >= 0; i--)
+	{
+		int t = s[i] - '0';
+		t = t * 2 + c;
+		result += (t % 10 + '0');
+		c = t / 10;
+	}
+	if (c > 0)
+		result += (c + '0');
+
+	reverse(result.begin(), result.end());
+
+	return result;
+}
 QInt& QInt::operator=(QInt const& other)
 {
     if (this != &other) {
@@ -397,6 +502,10 @@ QInt::QInt(string text, int op)
 
         break;
 
+	case DEC:
+	{
+		*this = DectoBin(text);
+	}
     default:
         break;
     }
@@ -405,4 +514,96 @@ QInt::QInt(string text, int op)
 QInt::QInt(QInt const& other)
 {
     *this = other;
+}
+QInt QInt::operator~ () const
+{
+	QInt result;
+	for (int i = 0; i < N_UINT; i++)
+	{
+		result.data.int32[i] = ~this->data.int32[i];
+	}
+	return result;
+}
+QInt QInt::operator^ (const QInt& A) const
+{
+	QInt result;
+	for (int i = 0; i < N_UINT; i++)
+	{
+		result.data.int32[i] = this->data.int32[i] ^ A.data.int32[i];
+	}
+	return result;
+}
+QInt QInt::operator+ (QInt& A)
+{
+	QInt result;
+	if (isZero())
+		return A;
+	bool cr = 0;
+	for (int i = 0; i < N_UINT * 32; i++)
+	{
+		int temp = cr + A.getBit(i) + getBit(i);
+
+		switch (temp)
+		{
+		case 0: //0+0=0
+		{
+			result.setBit(i, 0);
+			cr = 0;
+			break;
+		}
+		case 1: //0+1=1 or 1+0=1
+		{
+			result.setBit(i, 1);
+			cr = 0;
+			break;
+		}
+		case 2://1+1=0 nho 1
+		{
+			result.setBit(i, 0);
+			cr = 1;
+			break;
+		}
+		case 3: //1+1+1(nho)=1 nho 1
+		{
+			result.setBit(i, 1);
+			cr = 1;
+			break;
+		}
+		
+		}
+	}
+	return result;
+}
+QInt QInt::convert()
+{
+	if (isZero()) return *this;
+	
+    QInt res;
+	res = ~(*this);
+	QInt temp("1", BIN);
+    //cong them 1 de duoc so bu 2
+	res = res + temp;
+
+	return res;
+}
+QInt QInt::operator- (QInt& A)
+{
+	QInt result;
+	result = A.convert() + (*this);
+	return result;
+}
+string QInt::div2(string text)
+{
+	string result = "";
+	int t = 0;
+	for (int i = 0; i < text.length(); i++)
+	{
+		t = t * 10 + (text[i] - '0');
+		if (i > 0 || (i == 0 && t >= 2))
+		{
+			result += t / 2 + '0';
+		}
+		t = t % 2;
+	}
+	return result;
 }

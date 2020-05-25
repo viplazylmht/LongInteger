@@ -9,17 +9,16 @@ using namespace std;
 
 int main()
 {
-    
-    //RWFile rw("input.txt", "output.txt");
-    //rw.Start();
+    QInt demoBIN("01111011", BIN);
+    QInt demoHEX("7B", HEX);
+    QInt demoDEC("123", DEC);
 
-    //rw.WriteFile();
-    
-    QInt t1("0", 16);
-    QInt t2 = 17;
-    QInt t3 = 0;
-    
-    cout << t3.exportData(HEX) << endl;
-    cout << t3.exportData(BIN) << endl;
-    return 0;
+	cout << demoBIN.toString();
+	cout << demoHEX.toString();
+	cout << demoDEC.toString();
+	
+	QInt t = 100;
+	cout << (demoDEC - t).toString();
+
+	return 0;
 }
