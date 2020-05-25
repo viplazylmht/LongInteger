@@ -14,7 +14,7 @@ void QInt::setBit(int const& pos, bool const& val)
     }
     else {
         // gan gia tri 0
-        *reg = *reg & !(1 << i);
+        *reg = *reg & ~(1 << i);
     }
 }
 
