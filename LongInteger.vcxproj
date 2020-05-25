@@ -139,10 +139,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="QInt.cpp" />
+    <ClCompile Include="RWFile.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QInt.h" />
+    <ClInclude Include="RWFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

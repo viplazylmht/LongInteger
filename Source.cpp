@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include "QInt.h"
+#include "RWFile.h"
 
 using namespace std;
 

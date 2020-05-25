@@ -32,22 +32,26 @@ bool QInt::getBit(int pos)
 }
 string QInt::toString()
 {
-	stringstream out;
+    stringstream out;
+    
+    out << "BIN: ";
+    out << exportData(BIN) << endl;
 
-	out << "\nBIN: ";
-	out << toBinStr() << endl;
-
-	out << "\nDEC: ";
-	out << toDecStr();
-
-	//out << "\n\nHEX: ";
-	//out << toHexStr() << endl;
-
-	return out.str();
+    out << "HEX: ";
+    out << exportData(HEX) << endl;
+    
+    return out.str();
 }
+
 string QInt::toBinStr()
 {
-    stringstream out;
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
+
+    stringstream  out;
 
     for (int j = 0; j < N_UINT; ++j)
     {
@@ -55,6 +59,80 @@ string QInt::toBinStr()
         {
             out << ((data.int32[j] << (31 - i)) >> 31);
         }
+    }
+
+    // trim 
+    string str = out.str();
+
+    int i = 0;
+    while (str[i] == '0') i++;
+
+    return str.substr(i);
+}
+
+
+string QInt::toHexStr()
+{
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
+    stringstream temp;
+    bool startPrint = false;
+
+    for (int j = 0; j < N_BYTE; ++j)
+    {
+        char c = data.byteAt(j);
+
+        if (startPrint || c != 0)
+        {
+            startPrint = true;
+            string bt = bin2hex(c);
+
+            if (bt.length() == 2) {
+                temp << bt;
+                continue;
+            }
+
+            if (bt.length() == 0) {
+                temp << "00";
+            }
+            else {
+                // bt.length() == 1
+                temp << 0 << bt;
+            }
+        }
+    }
+
+    // this for toUpperCase
+    string str = temp.str();
+    for (char& i : str)
+    {
+        if (i >= 'a' && i <= 'z')
+        {
+            i = i + 'A' - 'a';
+        }
+    }
+
+    return str;
+}
+
+string QInt::exportData(int base)
+{
+    switch (base)
+    {
+    case BIN:
+        return toBinStr();
+        
+    case HEX:
+        return toHexStr();
+        
+    // return in Decimal by default
+    default:
+        return toDecStr();
+    }
+}
     }
 	// trim 
 	string str = out.str();
@@ -111,6 +189,11 @@ bool QInt::QInt::isZero() const
 //str2->>str10
 string QInt::toDecStr()
 {
+    // if value = 0, this func do not return anything
+    // so we need return "0" if it happen 
+    // this code can be accept to all base
+    if (*this == 0) return "0";
+
 	QInt p = *this;
 	//string s = p.toBinStr();
 	int kt = 0;
@@ -173,6 +256,144 @@ QInt& QInt::operator=(QInt const& other)
     return *this;
 }
 
+bool QInt::operator==(QInt const& other)
+{
+    if (&other == this) return true;
+
+    bool res = true;
+    for (int i = 0; i < N_UINT; ++i)
+    {
+        res = (this->data.int32[i] == other.data.int32[i]) & res;
+    }
+
+    return res;
+}
+
+bool QInt::operator==(long long const& n)
+{
+    QInt t = n;
+    return (*this == t);
+}
+
+QInt::QInt(long long const& n)
+{
+    // long long take only 8 low byte (right side)
+
+    unsigned int low = ((n << 32) >> 32);
+    unsigned int high = (n >> 32); // n >> 32 here is SAR because n is signed
+
+    data.int32[N_UINT - 1] = low;
+    data.int32[N_UINT - 2] = high;
+
+    int mask = 0;
+
+    // check sign of n
+    if ((high >> 31) == 1) // SHR because high is unsigned
+    {
+        // negative number
+        mask = -1;
+    }
+
+    for (int i = 0; i < N_UINT - 2; ++i)
+    {
+        data.int32[i] = mask;
+    }
+}
+
+QInt const QInt::operator<<(int count)
+{
+    QInt t(*this);
+    t.SHL(count);
+
+    return t;
+}
+
+QInt const QInt::operator>>(int count)
+{
+    // shift right is SAR
+    QInt t(*this);
+    t.SAR(count);
+
+    return t;
+}
+
+QInt const QInt::operator|(QInt const& other)
+{
+    QInt t = (*this);
+    for (int i = 0; i < N_UINT; ++i)
+    {
+        t.data.int32[i] = (this->data.int32[i] | other.data.int32[i]);
+    }
+
+    return t;
+}
+
+QInt const QInt::operator&(QInt const& other)
+{
+    QInt t = (*this);
+    for (int i = 0; i < N_UINT; ++i)
+    {
+        t.data.int32[i] = (this->data.int32[i] & other.data.int32[i]);
+    }
+
+    return t;
+}
+
+char QInt::hex2bin(char c)
+{
+    char res = 0;
+    if (c >= '0' && c <= '9') 
+    {
+        res = c - '0';
+        return res;
+    } 
+    
+    if (c >= 'A' && c <= 'F')
+    {
+        res = 10 + c - 'A';
+        return res;
+    }
+
+    if (c >= 'a' && c <= 'f')
+    {
+        res = 10 + c - 'A';
+        return res;
+    }
+
+    // return 0 if c is not valid hex code 
+    return res;
+}
+
+string QInt::bin2hex(unsigned char const& c)
+{
+    stringstream out;
+    // mo
+    char l = c >> 4;
+    if (l != 0) {
+        if (l < 10) {
+            out << (char)(l + '0');
+        }
+        else {
+            out << (char)(l + 'A' - 10);
+        }
+    }
+    // lo
+    char r = c & 0b00001111;
+    if (r != 0) {
+        if (r < 10) {
+            out << (char)(r + '0');
+        }
+        else {
+            out << (char)(r + 'A' - 10);
+        }
+    }
+    else {
+        if (out.str().length() == 1) out << 0;
+    }
+
+    return out.str();
+}
+
 void QInt::SHL(int count)
 {
     // debug
@@ -184,7 +405,7 @@ void QInt::SHL(int count)
         {
             data.int32[j] = data.int32[j] << 1;
 
-            // set bit0 to content of bit31 on next int32 (if exist)
+            // set bit0 to content of bit31 on prev int32 (if exist)
             if (j < N_UINT - 1)
             {
                 unsigned int t = data.int32[j + 1];
@@ -194,9 +415,64 @@ void QInt::SHL(int count)
     }
 }
 
+void QInt::SHR(int count)
+{
+    for (int i = 0; i < count; ++i)
+    {
+        for (int j = N_UINT - 1; j >= 0; --j)
+        {
+            data.int32[j] = data.int32[j] >> 1;
+
+            // set bit31 to content of bit0 on next int32 (if exist)
+            if (j > 0)
+            {
+                unsigned int t = data.int32[j - 1];
+                data.int32[j] = data.int32[j] | ((t & 1) << 31);
+            }
+        }
+    }
+}
+
+void QInt::SAR(int count)
+{
+    bool msb = (data.int32[0] >> 31) & 1;
+    for (int i = 0; i < count; ++i) {
+        SHR(1);
+        if (msb) setBit(NUMBER_OF_BIT - 1);
+    }
+}
+
+// SAL is tha same as SHL
+void QInt::SAL(int count)
+{
+    SHL(count);
+}
+
+void QInt::ROR(int count)
+{
+    QInt l = (*this);
+    QInt r = (*this);
+
+    l.SHR(count);
+    r.SHL(NUMBER_OF_BIT - count);
+
+    *this = (l | r);
+}
+
+void QInt::ROL(int count)
+{
+    QInt l = (*this);
+    QInt r = (*this);
+
+    l.SHR(NUMBER_OF_BIT - count);
+    r.SHL(count);
+
+    *this = (l | r);
+}
+
 void QInt::clearBit()
 {
-    for (int j = 0; j < NUMBER_OF_BIT / 32; ++j)
+    for (int j = 0; j < N_UINT; ++j)
     {
         data.int32[j] = 0;
     }
@@ -220,6 +496,21 @@ QInt::QInt(string text, int op)
         }
 
         break;
+    case HEX:
+        for (int i = 0; i < text.length(); ++i)
+        {
+            SHL(4);
+            unsigned char state = hex2bin(text.at(i));
+
+            // update LSB
+            // two option are the same
+
+            //data.int32[N_UINT - 1] = data.int32[N_UINT - 1] | state;
+            data.byteAt(N_BYTE - 1) = data.byteAt(N_BYTE - 1) | state;
+        }
+
+        break;
+
 	case DEC:
 	{
 		*this = DectoBin(text);
