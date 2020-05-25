@@ -94,17 +94,23 @@ bool RWFile::ExecALine(const string& line, string& result)
 		if (tokens.size() == 3) {
 
 			// here just 1 opr
-			if (isOperator(tokens[1], basein))
+			if (tokens[1] == "2" || tokens[1] == "10" || tokens[1] == "16")
 			{
-				opt = tokens[1];
-				opr1 = tokens[2];
-			
-				
-			}
-			else {
-				// this only transform base
+				// this only transform with known base
 				baseout = parseInt(tokens[1]);
 				opr1 = tokens[2];
+			}
+			else
+			{
+				if (isOperator(tokens[1], basein))
+				{
+					opt = tokens[1];
+					opr1 = tokens[2];
+				}
+				else
+				{
+					// transform with unknown base
+				}
 			}
 		}
 
@@ -164,6 +170,33 @@ bool RWFile::ExecALine(const string& line, string& result)
 
 			t2 = new QInt(opr2, basein);
 			kq = new QInt(*t1 & *t2);
+		}
+
+		if (opt == "^") {
+			isValidOpt = true;
+
+			t2 = new QInt(opr2, basein);
+			kq = new QInt(*t1 ^ *t2);
+		}
+
+		if (opt == "~") {
+			isValidOpt = true;
+
+			kq = new QInt(~*t1);
+		}
+
+		if (opt == "+") {
+			isValidOpt = true;
+
+			t2 = new QInt(opr2, basein);
+			kq = new QInt(*t1 + *t2);
+		}
+
+		if (opt == "-") {
+			isValidOpt = true;
+
+			t2 = new QInt(opr2, basein);
+			kq = new QInt(*t1 - *t2);
 		}
 
 		if (baseout != 0) {
