@@ -209,7 +209,7 @@ bool RWFile::ExecALine(const string& line, string& result)
 		// result object was stored at kq
 		if (isValidOpt) {
 
-			// export as basein by default, but baseout dercaled, use baseout (transform)
+			// export as basein by default, but when baseout dercaled, use baseout (transform)
 			result = kq->exportData((baseout == 0) ? basein : baseout);
 		}
 		else

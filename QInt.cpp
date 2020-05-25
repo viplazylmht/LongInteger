@@ -37,6 +37,9 @@ string QInt::toString()
     out << "BIN: ";
     out << exportData(BIN) << endl;
 
+    out << "DEC: ";
+    out << exportData(DEC) << endl;
+
     out << "HEX: ";
     out << exportData(HEX) << endl;
     
@@ -49,7 +52,6 @@ string QInt::toBinStr()
     // so we need return "0" if it happen 
     // this code can be accept to all base
     if (*this == 0) return "0";
-
 
     stringstream  out;
 
@@ -84,14 +86,13 @@ string QInt::toHexStr()
     for (int j = 0; j < N_BYTE; ++j)
     {
         char c = data.byteAt(j);
-
         if (startPrint || c != 0)
         {
-            startPrint = true;
             string bt = bin2hex(c);
 
             if (bt.length() == 2) {
                 temp << bt;
+                startPrint = true;
                 continue;
             }
 
@@ -100,8 +101,17 @@ string QInt::toHexStr()
             }
             else {
                 // bt.length() == 1
-                temp << 0 << bt;
+                if (!startPrint)
+                {
+                    temp << bt;
+                }
+                else
+                {
+                    temp << 0 << bt;
+                }
             }
+
+            startPrint = true;
         }
     }
 
@@ -327,6 +337,22 @@ QInt const QInt::operator&(QInt const& other)
         t.data.int32[i] = (this->data.int32[i] & other.data.int32[i]);
     }
 
+    return t;
+}
+
+QInt QInt::MIN_VALUE()
+{
+    QInt t = 0;
+    t.setBit(NUMBER_OF_BIT - 1);
+
+    return t;
+}
+
+QInt QInt::MAX_VALUE()
+{
+    QInt t = -1;
+    t.setBit(NUMBER_OF_BIT - 1, false);
+    
     return t;
 }
 
