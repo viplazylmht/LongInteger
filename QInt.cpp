@@ -131,16 +131,7 @@ string QInt::exportData(int base)
     // return in Decimal by default
     default:
         return toDecStr();
-    }
-}
-    }
-	// trim 
-	string str = out.str();
-
-	int i = 0;
-	while (str[i] == '0') { i++; }
-
-	return str.substr(i);
+    }  
 }
 QInt QInt::DectoBin(string s)
 {
@@ -152,7 +143,7 @@ QInt QInt::DectoBin(string s)
 		kt = 1;
 	}
 	int i = 0;
-	while (s != "0")
+	while (s != "")
 	{
 		int bit = (s[s.length() - 1] - '0') % 2;
 		res.setBit(i, bit);
@@ -585,31 +576,13 @@ QInt QInt::operator+ (QInt& A)
 }
 QInt QInt::convert()
 {
-	QInt res;
-	if (isZero())
-		return *this;
-	if (isNegative())//la so -
-	{
-		//tru 1
-		QInt tru1;
-		for (int i = 0; i < N_BYTE - 1; ++i)
-		{
-			tru1.data.byteAt(i) = 0b11111111;
-		}
-
-		res = res + tru1;
-		res = ~res;
-		//dao bit
-	}
-	else
-	{
-		//bu 1
-		res = ~(*this);
-		//cout << res.toBinStr();
-		QInt temp("1", BIN);
-		//cong them 1 de duoc so bu 2
-		res = res + temp;
-	}
+	if (isZero()) return *this;
+	
+    QInt res;
+	res = ~(*this);
+	QInt temp("1", BIN);
+    //cong them 1 de duoc so bu 2
+	res = res + temp;
 
 	return res;
 }

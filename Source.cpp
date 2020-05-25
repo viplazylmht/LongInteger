@@ -9,18 +9,16 @@ using namespace std;
 
 int main()
 {
-    QInt demo("10101110", BIN);
+    QInt demoBIN("01111011", BIN);
+    QInt demoHEX("7B", HEX);
+    QInt demoDEC("123", DEC);
 
-    QInt test = demo;
+	cout << demoBIN.toString();
+	cout << demoHEX.toString();
+	cout << demoDEC.toString();
+	
+	QInt t = 100;
+	cout << (demoDEC - t).toString();
 
-	QInt demo1("123", DEC);
-	QInt demo2("1", DEC);
-
-	demo1.setBit(7, 0);
-	cout << demo1.toString() << endl;
-	cout << demo1.getBit(0) << " - " << demo1.getBit(1) << endl;
-
-	cout << demo2.toString();
-	cout << (demo1 + demo2).toString();
-    return 0;
+	return 0;
 }
