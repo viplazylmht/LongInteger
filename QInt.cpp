@@ -21,11 +21,8 @@ void QInt::setBit(int const& pos, bool const& val)
 		*reg = *reg & ~(1 << i);
 	}
 }
-
-bool QInt::getBit(int pos)
+bool QInt::getBit(int pos)const
 {
-	//if (pos < 0 || pos >= NUMBER_OF_BIT) return ;
-
 	int i = pos % 32;
 
 	return ((this->data.int32[N_UINT - 1 - pos / 32]) >> i & 1);
@@ -145,33 +142,31 @@ string QInt::exportData(int base)
 }
 QInt QInt::DectoBin(string s)
 {
-	int kt = 0;//kiem tra so am
+	int checkNegative = 0; //kiem tra so am
 	QInt res;
 	if (s[0] == '-')
 	{
-		s.erase(0, 1);
-		kt = 1;
+		s.erase(0, 1);//xoa dau -
+		checkNegative = 1; //la so am
 	}
 	int i = 0;
+
 	while (s != "")
 	{
+		//chuyen str10 qua str2
 		int bit = (s[s.length() - 1] - '0') % 2;
 		res.setBit(i, bit);
 		s = div2(s);
-		//res += bit + '0';
 		i++;
 	}
-	//reverse(res.begin(),res.end());
-
-	if (kt == 1)
+	if (checkNegative == 1)//la so am
 	{
 		//chuyen qua bu 2
-		res = res.convert();
+		res = res.toConvertBu2();
 	}
-	
 	return res;
 }
-bool QInt::isNegative()
+bool QInt::isNegative() const
 {
 	return ((this->getBit(N_UINT * 32 - 1)) == 1);
 }
@@ -196,56 +191,38 @@ string QInt::toDecStr()
     if (*this == 0) return "0";
 
 	QInt p = *this;
-	//string s = p.toBinStr();
-	int kt = 0;
+
+	int checkNegative = 0;
 	if (p.isNegative())
 	{
-		p = p.convert();
-		kt = 1;
+		//Neu la so am thi chuyen qua bu 2
+		p = p.toConvertBu2();
+		checkNegative = 1;
 	}
 	//p luc nay la so duong
-	string s = p.toBinStr();
+	string s = p.toBinStr();//s[0] luon bang 1 o vi tri so 0
 	int pos = 0;
-	for (int i = 0; i < s.length(); i++)
-	{
-		if (s[i] == '1')
-		{
-			pos = i;
-			break;
-		}
-	}
-	string res;
+
+	string res = "0";
+	int count = s.length() - 1;
 	while (pos < s.length())
 	{
-		int k = s[pos] - '0';
-		res = mul2(res, k);
+		int bit = s[pos] - '0';
+		if (bit != 0)
+		{ 
+			string temp = Power(2, count);
+			res = add2Str(res, temp);
+		}
+		count--;
 		pos++;
 	}
-	if (kt == 1)
+	if (checkNegative == 1)
 	{
 		res = '-' + res;
 	}
 	return res;
 }
-string QInt::mul2(string s, int pos)
-{
-	string result = "";
-	int c = pos;
 
-	for (int i = s.length() - 1; i >= 0; i--)
-	{
-		int t = s[i] - '0';
-		t = t * 2 + c;
-		result += (t % 10 + '0');
-		c = t / 10;
-	}
-	if (c > 0)
-		result += (c + '0');
-
-	reverse(result.begin(), result.end());
-
-	return result;
-}
 QInt& QInt::operator=(QInt const& other)
 {
     if (this != &other) {
@@ -459,12 +436,6 @@ void QInt::SAR(int count)
     }
 }
 
-// SAL is tha same as SHL
-void QInt::SAL(int count)
-{
-    SHL(count);
-}
-
 void QInt::ROR(int count)
 {
     QInt l = (*this);
@@ -559,77 +530,334 @@ QInt QInt::operator^ (const QInt& A) const
 	}
 	return result;
 }
-QInt QInt::operator+ (QInt& A)
+QInt QInt::operator+ (const QInt& A) const
 {
+	//neu bang 0 + A thi tra ve A
+	if (isZero()) return A;
+	if (A.isZero()) return *this;
+
 	QInt result;
-	if (isZero())
-		return A;
-	bool cr = 0;
+	bool bit = 0; //giong nhu so nho
+	
 	for (int i = 0; i < N_UINT * 32; i++)
 	{
-		int temp = cr + A.getBit(i) + getBit(i);
+		int temp = bit + A.getBit(i) + getBit(i);
 
 		switch (temp)
 		{
 		case 0: //0+0=0
 		{
 			result.setBit(i, 0);
-			cr = 0;
+			bit = 0;
 			break;
 		}
 		case 1: //0+1=1 or 1+0=1
 		{
 			result.setBit(i, 1);
-			cr = 0;
+			bit = 0;
 			break;
 		}
 		case 2://1+1=0 nho 1
 		{
 			result.setBit(i, 0);
-			cr = 1;
+			bit = 1;
 			break;
 		}
 		case 3: //1+1+1(nho)=1 nho 1
 		{
 			result.setBit(i, 1);
-			cr = 1;
+			bit = 1;
 			break;
 		}
 		
 		}
 	}
+	//Check overflow
+	//vi du: A+B thì A,B cung dau ma cho ket qua trai dau
+	if (!A.isNegative() && !isNegative()&& result.isNegative())
+	{
+		throw("Overflow");
+	}
+	if (A.isNegative() && isNegative() && !result.isNegative())
+	{
+		throw("Overflow");
+	}
 	return result;
 }
-QInt QInt::convert()
+bool QInt::operator!= (QInt const& B)
+{
+	return !(*this == B);
+}
+QInt QInt::toConvertBu2()
 {
 	if (isZero()) return *this;
-	
+	//MIN can't to converted
+	if (*this == MIN_VALUE()) return *this;
+
     QInt res;
+	//dao chuoi qua bu 1
 	res = ~(*this);
+
 	QInt temp("1", BIN);
-    //cong them 1 de duoc so bu 2
+    //bu 1 cong them 1 de duoc so bu 2
 	res = res + temp;
 
 	return res;
 }
-QInt QInt::operator- (QInt& A)
+QInt QInt::operator- (const QInt& A) const
 {
 	QInt result;
-	result = A.convert() + (*this);
+	QInt B = A;
+
+	result = B.toConvertBu2() + (*this);
+
+	//Check overflow
+	//vi du: A-B thì A va (-B)(so bu 2 cua B) cung dau ma cho ket qua trai dau
+	if (!B.toConvertBu2().isNegative() && !isNegative() && result.isNegative())
+	{
+		throw("Overflow");
+	}
+	if (B.toConvertBu2().isNegative() && isNegative() && !result.isNegative())
+	{
+		throw("Overflow");
+	}
 	return result;
+}
+
+bool QInt::operator> (QInt const& B)
+{
+	if (!isNegative() && B.isNegative()) return true;
+	if (isNegative() && !B.isNegative()) return false;
+	for (int i = 0; i < N_UINT; i++)
+	{
+		if (data.int32[i] > B.data.int32[i])
+			return true;
+		if (data.int32[i] < B.data.int32[i])
+			return false;
+	}
+	
+	return false;
+}
+bool QInt::operator< (QInt const& B) 
+{
+	if (!isNegative() && B.isNegative()) return false;
+	if (isNegative() && !B.isNegative()) return true;
+	for (int i = 0; i < N_UINT; i++)
+	{
+		if (data.int32[i] < B.data.int32[i])
+			return true;
+		if (data.int32[i] > B.data.int32[i])
+			return false;
+	}
+	return false;
+}
+//Booth’s Multiplication Algorithm
+QInt QInt::operator* (const QInt& B) const
+{
+	//Thuc hien phep nhan M*Q
+	QInt M = *this;
+	QInt Q = B;
+
+	//Mot trong 2 so = 0 thi tra ve ket qua la 0
+	if (B.isZero() || isZero()) return QInt();
+
+	//Check overflow
+	/*
+	if ((a == -1) && (x == INT_MIN)) /* `a * x` can overflow
+	if ((x == -1) && (a == INT_MIN)) /* `a * x` (or `a / x`) can overflow
+	// general case
+	if (a > INT_MAX / x) /* `a * x` would overflow ;
+	if ((a < INT_MIN / x)) /* `a * x` would underflow
+	*/
+	
+	if ((M == MIN_VALUE() && Q == -1) || (Q == MIN_VALUE() && M == -1))
+	{
+		throw ("Overflow");
+	}
+
+	if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q)
+	{
+		throw ("Overflow");
+	}
+
+	QInt A = 0;
+	int k = N_UINT * 32;
+	int Q1 = 0;
+
+	while (k > 0)
+	{
+		//Q0Q1 = 10 thi A = A - M
+		if (Q.getBit(0) == 1 && Q1 == 0)
+		{
+			A = A - (*this);
+		}
+		//Q0Q1 = 01 thi A = A + M
+		else if (Q.getBit(0) == 0 && Q1 == 1)
+		{
+			A = A + (*this);
+		}
+		//dich phai [A,Q,Q1]
+		Q1 = Q.getBit(0);
+		Q.SAR(1);
+		Q.setBit(NUMBER_OF_BIT - 1, A.getBit(0));
+		A.SAR(1);
+		k--;
+	}
+	string s = A.toBinStr() + Q.toBinStr();
+	
+	QInt result(s, BIN);
+	//check overflow
+	if (result / B != *this)
+	{
+		throw ("Overflow");
+	}
+	
+	return result;
+}
+//Restoring Division Algorithm
+QInt QInt::operator/ (const QInt& P) const
+{
+	QInt Q = *this;
+	QInt M = P;
+	QInt A = 0;//Q>0 thi gan A=0
+
+	if (M.isZero()) throw("divide by 0");
+	if (Q.isZero()) return QInt();
+
+	//check overflow
+	if (Q == MIN_VALUE() && M == -1 )
+	{
+		throw ("Overflow");
+	}
+
+	if (Q.isNegative())
+	{
+		//Q<0 thi gan A=1
+		for (int i = 0; i < N_UINT * 32; i++)
+		{
+			A.setBit(i, 1);
+		}
+	}
+	//Neu so am thi chuyen ve duong
+	if (Q.isNegative()) Q = Q.toConvertBu2();
+	if (M.isNegative()) M = M.toConvertBu2();
+
+	int k = N_UINT * 32;
+	while (k > 0)
+	{
+		A.SHL(1);
+		A.setBit(0, Q.getBit(NUMBER_OF_BIT - 1));
+		Q.SHL(1);
+		A = A - M;
+		//Neu A<0: Q0=0 va A+M=A
+		if (A.isNegative())
+		{
+			Q.setBit(0, 0);
+			A = A + M;
+		}
+		else
+		{
+			//Nguoc lai: Q0=1
+			Q.setBit(0, 1);
+		}
+		k--;
+	}
+	
+	//neu 2 so khac thi chuyen ve so am 
+	if ((*this * P).isNegative())
+	{
+		Q = Q.toConvertBu2();
+	}
+	return Q;
 }
 string QInt::div2(string text)
 {
 	string result = "";
-	int t = 0;
+	int save = 0;
 	for (int i = 0; i < text.length(); i++)
 	{
-		t = t * 10 + (text[i] - '0');
-		if (i > 0 || (i == 0 && t >= 2))
+		save = (text[i] - '0') + save * 10;
+		if (save == 0 && i == 0 || i > 0)
 		{
-			result += t / 2 + '0';
+			result += save / 2 + '0';
 		}
-		t = t % 2;
+		save = save / 2;
 	}
 	return result;
 }
+
+string QInt::add2Str(string a, string b)
+{
+	string res = "";
+	int numremember = 0;//luu so nho sau moi lan cong
+	//them 0 vao moi chuoi de cho 2 chuoi co do dai bang nhau
+	if (a.length() > b.length())
+	{
+		while (a.length() != b.length())
+		{
+			b = '0' + b;
+		}
+	}
+	else
+	{
+		while (a.length() != b.length())
+		{
+			a = '0' + a;
+		}
+	}
+	for (int i = a.length() - 1; i >= 0; --i)
+	{
+		int temp = (a[i] - '0') + (b[i] - '0') + numremember;
+		
+		res += (temp % 10) + '0';
+
+		if (temp > 9)
+		{
+			numremember = 1;
+		}
+		else
+		{
+			numremember = 0;
+		}
+	}
+	//neu la so nho cuoi cung bang 1 thi + them1 vao chuoi
+	if (numremember == 1)
+		res = res + '1';
+	//do chuoi bi nguoc nen chuoi doi nguoc lai
+	reverse(res.begin(), res.end());
+
+	return res;
+}
+string QInt::mul2Str(string a, string b)
+{
+	//chuyen chuoi qua so
+	int ka = atoi(a.c_str());
+	int kb = atoi(b.c_str());
+
+	if (ka == 0 || kb == 0)//phep nhan neu 1 trong 2 so bang 0 thi ket qua = 0
+		return "0";
+
+	string res = a;
+	
+	for (int i = 0; i < kb - 1; ++i)
+	{
+		res = add2Str(res, a);
+	}
+	return res;
+}
+string QInt::Power(unsigned int a, unsigned int n)
+{
+	if (n == 0)//qui uoc a^0 = 1
+		return "1";
+
+	//chuyen so thanh chuoi
+	string res = to_string(a);
+	string A = to_string(a);
+
+	for (int i = 0; i < n - 1; ++i)
+	{
+		res = mul2Str(res, A);
+	}
+	return res;
+}
+

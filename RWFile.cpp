@@ -198,7 +198,18 @@ bool RWFile::ExecALine(const string& line, string& result)
 			t2 = new QInt(opr2, basein);
 			kq = new QInt(*t1 - *t2);
 		}
+		if (opt == "*") {
+			isValidOpt = true;
 
+			t2 = new QInt(opr2, basein);
+			kq = new QInt(*t1 * *t2);
+		}
+		if (opt == "/") {
+			isValidOpt = true;
+
+			t2 = new QInt(opr2, basein);
+			kq = new QInt(*t1 / *t2);
+		}
 		if (baseout != 0) {
 			// transform base
 
@@ -208,7 +219,6 @@ bool RWFile::ExecALine(const string& line, string& result)
 
 		// result object was stored at kq
 		if (isValidOpt) {
-
 			// export as basein by default, but when baseout dercaled, use baseout (transform)
 			result = kq->exportData((baseout == 0) ? basein : baseout);
 		}

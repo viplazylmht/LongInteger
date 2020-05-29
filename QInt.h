@@ -48,9 +48,11 @@ public:
 	void setBit(int const& pos, bool const& val = 1);
 
 	//get bit at pos
-	bool getBit(int pos);
+	bool getBit(int pos)const;
 
+	//str10 qua str2
 	QInt DectoBin(string);
+
     // Shift Left Logical
     void SHL(int count);
 
@@ -59,9 +61,6 @@ public:
 
     // Shift Arithmetic Right
     void SAR(int count);
-
-    // Shift Arithmetic Right
-    void SAL(int count);
     
     // Rotation Left
     void ROL(int count = 1);
@@ -75,43 +74,63 @@ public:
     // make printable object (not dump)
     string toString();
     
+	//Chuyen doi cac he so
     string toBinStr();
     string toDecStr();
     string toHexStr();
+
     string exportData(int base);
 
     // operator
     QInt& operator=(QInt const&);
-	QInt operator+ (QInt&);
-	QInt operator- (QInt&);
+
+	QInt operator+ (const QInt&) const;
+	QInt operator- (const QInt&) const;
+	
+	QInt operator* ( const QInt&) const;
+	QInt operator/ (const QInt&) const;
+
+	bool operator==(QInt const&);
+	bool operator==(long long const&);
+
+	bool operator!= (QInt const& B) ;
+
+	bool operator> (QInt const& B);
+	bool operator< (QInt const& B);
+
+	QInt const operator<<(int);
+	QInt const operator>>(int);
+
+	QInt const operator|(QInt const&);
+	QInt const operator&(QInt const&);
+
 	QInt operator^ (const QInt&) const;
 	QInt operator~ () const;
 
 	// kiem tra so am
-	bool isNegative();
+	bool isNegative() const;
 
 	//kiem tra bang 0
 	bool isZero() const;
 
 	//chuyen doi so qua bu 2
-	QInt convert();
+	QInt toConvertBu2();
 
-	//Ham chia 2
+	//Ham chia 2 ho tro cho chuyen doi tu str10 ve str2
 	string div2(string);
 
-	//Ham nhan 2
-	string mul2(string s, int pos);
+	//cong 2 chuoi so nguyen duong
+	string add2Str(string, string);
 
-    bool operator==(QInt const&);
-    bool operator==(long long const&); 
+	//Ham nhan 2 chuoi so duong tra ve ket qua la chuoi
+	string mul2Str(string, string);
 
-    QInt const operator<<(int);
-    QInt const operator>>(int);
-    QInt const operator|(QInt const&);
-    QInt const operator&(QInt const&);
+	//Ham mu voi cac so truyen vao nguyen duong tra ve ket qua la chuoi
+	string Power(unsigned int, unsigned int);
 
     static QInt MIN_VALUE();
     static QInt MAX_VALUE();
+
 private:
     // convert a character from hex to bin
     // input is a char, return a byte (but take only 4 bit aka from 0b00000000 -> 0b00001111)
