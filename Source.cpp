@@ -18,22 +18,6 @@ int main(int argc, char** argv)
 		rw.Start();
 		rw.WriteFile();
 	}
-	
-	QInt t = 0;
-	for (int i = 0; i < 80; ++i)
-	{
-		if (i % 2 == 0 || i % 5 == 0) t.setBit(i);
-	}
-
-	//t.ROR();
-	
-	cout << t.toString();
-
-	cout << "\nMIN: \n" << QInt::MIN_VALUE().toString();
-	//cout << "\nLength MIN: " << QInt::MIN_VALUE().toBinStr().length();
-
-	cout << "\nMAX: \n" << QInt::MAX_VALUE().toString();
-	//cout << "\nLength MAX: " << QInt::MAX_VALUE().toBinStr().length();
 
 	//string str1 = "129999954545645";
 	//string str2 = "198111212";
@@ -58,6 +42,26 @@ int main(int argc, char** argv)
 	//cout << (M / Q).toString();
 	//cout << (M * Q).toString();
 	*/
-	system("pause");
+	try {
+		QInt tk1 = QInt::MIN_VALUE();
+		QInt s2 = tk1;
+		QInt tk = tk1 + 1;
+		QInt cz = QInt::MAX_VALUE();
+
+		QInt cc = -100;
+		//tk1.sub(-50);
+		tk1.add(1);
+
+		//cout << tk1.toString();
+		cout << "MIN: " << tk1.exportData(HEX) << endl;
+		cout << "MAX: " << cz.exportData(HEX) << endl;
+		cout << (cc / -50).exportData(DEC);
+		//cout << (tk1 + cz).toString();
+
+	}
+	catch (const char* msg) {
+		cout << msg << endl;
+	}
+
 	return 0;
 }
