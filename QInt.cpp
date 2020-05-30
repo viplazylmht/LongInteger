@@ -701,7 +701,7 @@ QInt QInt::operator* (const QInt& B) const
 	//if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q) throw ("Overflow");
 
 	QInt A = 0;
-	int k = N_UINT * 32;
+	int k = NUMBER_OF_BIT;
 	int Q1 = 0;
 
 	while (k > 0)
@@ -740,7 +740,7 @@ QInt QInt::operator/ (const QInt& P) const
 {
 	QInt Q = *this;
 	QInt M = P;
-	QInt A = 0;//Q>0 thi gan A=0
+	QInt A = 0;
 
 	if (M.isZero()) throw("Division by 0");
 	if (Q.isZero()) return 0;
@@ -748,30 +748,27 @@ QInt QInt::operator/ (const QInt& P) const
 	//check overflow
 	if (Q == MIN_VALUE() && M == -1) throw ("Overflow");
 
-	if (Q.isNegative())
-	{
-		//Q<0 thi gan A=1
-		for (int i = 0; i < N_UINT * 32; i++)
-		{
-			A.setBit(i, 1);
-		}
-	}
-	//Neu so am thi chuyen ve duong
+	// Luu lai dau cua ket qua
+	// ket qua la true (so am) khi va chi khi 1 trong 2 (Q, M) la so am
+	bool resultSign = Q.isNegative() ^ M.isNegative();
+
+	// Chuyen Q, M ve so duong, tat ca phep tinh tinh toan se doi voi so duong
 	if (Q.isNegative()) Q = Q.toConvertBu2();
 	if (M.isNegative()) M = M.toConvertBu2();
 
-	int k = N_UINT * 32;
+	int k = NUMBER_OF_BIT;
 	while (k > 0)
 	{
 		A.SHL(1);
 		A.setBit(0, Q.getBit(NUMBER_OF_BIT - 1));
 		Q.SHL(1);
-		A = A - M;
+		A.sub(M); // bo qua kiem tra tran so
+
 		//Neu A<0: Q0=0 va A+M=A
 		if (A.isNegative())
 		{
 			Q.setBit(0, 0);
-			A = A + M;
+			A.add(M);
 		}
 		else
 		{
@@ -780,14 +777,9 @@ QInt QInt::operator/ (const QInt& P) const
 		}
 		k--;
 	}
-	
-	//neu 2 so khac thi chuyen ve so am 
-	/*if ((*this * P).isNegative())
-	{
-		Q = Q.toConvertBu2();
-	}
-	*/
-	if ((*this).isNegative() ^ P.isNegative())
+
+	// Phuc hoi lai dau cua ket qua
+	if (resultSign)
 	{
 		Q = Q.toConvertBu2();
 	}
@@ -801,13 +793,16 @@ string QInt::div2(string text)
 	for (int i = 0; i < text.length(); i++)
 	{
 		save = (text[i] - '0') + save * 10;
-		if (save == 0 && i == 0 || i > 0)
-		{
-			result += save / 2 + '0';
-		}
-		save = save / 2;
+		
+		result += save / 2 + '0';
+		save = save % 2;
 	}
-	return result;
+	
+	// trim first 0
+	int pos = 0;
+	while (result[pos] == '0') pos++;
+	
+	return result.substr(pos);
 }
 
 string QInt::add2Str(string a, string b)

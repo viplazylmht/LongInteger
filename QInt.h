@@ -6,7 +6,7 @@
 using namespace std;
 
 // KEEP IN MIND: NUMBER_OF_BIT luon la boi so cua 32, nhung bao nhiu cung duoc (64, 96, 128, ...)
-#define NUMBER_OF_BIT 64
+#define NUMBER_OF_BIT 128
 
 #define N_BYTE NUMBER_OF_BIT / 8
 #define N_UINT NUMBER_OF_BIT / 32

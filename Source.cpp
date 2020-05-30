@@ -14,34 +14,22 @@ int main(int argc, char** argv)
 		// read instruction from command line
 		char* input = argv[1];
 		char* output = argv[2];
+
 		RWFile rw(input, output);
+
 		rw.Start();
 		rw.WriteFile();
+
+		return 0;
 	}
 
-	//string str1 = "129999954545645";
-	//string str2 = "198111212";
+	//RWFile rw("input.txt", "output.txt");
 
-	/*
-	QInt demo = 1299925;
-	QInt demo1 = 198;
+	//rw.Start();
+	//rw.WriteFile();
 
-	//QInt demo1(str2, DEC);
-	//cout << demo.add2Str(str1, str2) << "\n";
-	//cout << demo.Power(20, 9) << "\n";
+	//return 0;
 
-	//cout << demo.toString();
-	//cout << demo1.toString();
-	//cout << (demo + demo1).toString();
-	//cout << (demo - demo1).toString();
-	cout << (demo * demo1).toString();
-	cout << (demo / demo1).toString();
-
-	//QInt M = QInt::MIN_VALUE();
-	//QInt Q = -1;
-	//cout << (M / Q).toString();
-	//cout << (M * Q).toString();
-	*/
 	try {
 		QInt tk1 = QInt::MIN_VALUE();
 		QInt s2 = tk1;
@@ -53,9 +41,9 @@ int main(int argc, char** argv)
 		tk1.add(1);
 
 		//cout << tk1.toString();
-		cout << "MIN: " << tk1.exportData(HEX) << endl;
+		cout << "MIN: " << tk1.exportData(DEC) << endl;
 		cout << "MAX: " << cz.exportData(HEX) << endl;
-		cout << (cc / -50).exportData(DEC);
+		cout << (cc / -20).exportData(HEX);
 		//cout << (tk1 + cz).toString();
 
 	}
