@@ -166,22 +166,67 @@ QInt QInt::DectoBin(string s)
 	}
 	return res;
 }
-bool QInt::isNegative() const
+QInt QInt::add(QInt const& A)
 {
-	return ((this->getBit(N_UINT * 32 - 1)) == 1);
-}
-bool QInt::QInt::isZero() const
-{
-	for (int i = 0; i < N_UINT; i++)
+	//neu bang 0 + A thi tra ve A
+	if (*this == 0) return (*this = A);
+
+	QInt result;
+	bool bit = 0; //giong nhu so nho
+
+	for (int i = 0; i < NUMBER_OF_BIT; i++)
 	{
-		if (this->data.int32[i] != 0)
+		int temp = bit + A.getBit(i) + getBit(i);
+
+		switch (temp)
 		{
-			return false;
+		case 0: //0+0=0
+		{
+			result.setBit(i, 0);
+			bit = 0;
+			break;
+		}
+		case 1: //0+1=1 or 1+0=1
+		{
+			result.setBit(i, 1);
+			bit = 0;
+			break;
+		}
+		case 2://1+1=0 nho 1
+		{
+			result.setBit(i, 0);
+			bit = 1;
+			break;
+		}
+		case 3: //1+1+1(nho)=1 nho 1
+		{
+			result.setBit(i, 1);
+			bit = 1;
+			break;
+		}
+
 		}
 	}
 
-	return true;
+	*this = result;
+
+	return *this;
 }
+QInt QInt::sub(QInt const& A)
+{
+	// FOR CASE 2 PARAMETER ARE EQUAL (for skip error occurred when call MIN - MIN)
+	if (*this == A)	return (*this = 0);
+
+	QInt result = *this;
+	result.add(A.toConvertBu2());
+
+	return (*this = result);
+}
+bool QInt::isNegative() const
+{
+	return ((this->getBit(NUMBER_OF_BIT - 1)) == 1);
+}
+
 //str2->>str10
 string QInt::toDecStr()
 {
@@ -234,7 +279,7 @@ QInt& QInt::operator=(QInt const& other)
     return *this;
 }
 
-bool QInt::operator==(QInt const& other)
+bool QInt::operator==(QInt const& other) const
 {
     if (&other == this) return true;
 
@@ -245,12 +290,6 @@ bool QInt::operator==(QInt const& other)
     }
 
     return res;
-}
-
-bool QInt::operator==(long long const& n)
-{
-    QInt t = n;
-    return (*this == t);
 }
 
 QInt::QInt(long long const& n)
@@ -390,9 +429,6 @@ string QInt::bin2hex(unsigned char const& c)
 
 void QInt::SHL(int count)
 {
-    // debug
-    //cout << "SHL CALLED - " << toString();
-
     for (int i = 0; i < count; ++i)
     {
         for (int j = 0; j < N_UINT; ++j)
@@ -466,11 +502,11 @@ void QInt::clearBit()
     }
 }
 
-QInt::QInt(string text, int op)
+QInt::QInt(string text, int base)
 {
     clearBit();
 
-    switch (op)
+    switch (base)
     {
     case BIN:
 
@@ -532,46 +568,10 @@ QInt QInt::operator^ (const QInt& A) const
 }
 QInt QInt::operator+ (const QInt& A) const
 {
-	//neu bang 0 + A thi tra ve A
-	if (isZero()) return A;
-	if (A.isZero()) return *this;
+	// Addition without check overflow
+	QInt result = *this;
+	result.add(A);
 
-	QInt result;
-	bool bit = 0; //giong nhu so nho
-	
-	for (int i = 0; i < N_UINT * 32; i++)
-	{
-		int temp = bit + A.getBit(i) + getBit(i);
-
-		switch (temp)
-		{
-		case 0: //0+0=0
-		{
-			result.setBit(i, 0);
-			bit = 0;
-			break;
-		}
-		case 1: //0+1=1 or 1+0=1
-		{
-			result.setBit(i, 1);
-			bit = 0;
-			break;
-		}
-		case 2://1+1=0 nho 1
-		{
-			result.setBit(i, 0);
-			bit = 1;
-			break;
-		}
-		case 3: //1+1+1(nho)=1 nho 1
-		{
-			result.setBit(i, 1);
-			bit = 1;
-			break;
-		}
-		
-		}
-	}
 	//Check overflow
 	//vi du: A+B thì A,B cung dau ma cho ket qua trai dau
 	if (!A.isNegative() && !isNegative()&& result.isNegative())
@@ -582,123 +582,114 @@ QInt QInt::operator+ (const QInt& A) const
 	{
 		throw("Overflow");
 	}
+
 	return result;
 }
-bool QInt::operator!= (QInt const& B)
+bool QInt::operator!= (QInt const& B) const
 {
 	return !(*this == B);
 }
-QInt QInt::toConvertBu2()
+QInt QInt::toConvertBu2() const
 {
-	if (isZero()) return *this;
-	//MIN can't to converted
-	if (*this == MIN_VALUE()) return *this;
+	//MIN and ZERO can't be converted
+	if (*this == 0 || *this == MIN_VALUE()) return *this;
 
     QInt res;
 	//dao chuoi qua bu 1
 	res = ~(*this);
 
-	QInt temp("1", BIN);
     //bu 1 cong them 1 de duoc so bu 2
-	res = res + temp;
+	res = res + 1;
 
 	return res;
 }
 QInt QInt::operator- (const QInt& A) const
 {
-	QInt result;
-	QInt B = A;
+	if ((A < 0) && (A > MAX_VALUE() + *this)) throw("Overflow");
+	if ((A > 0) && (A < MIN_VALUE() + *this)) throw("Overflow");
 
-	result = B.toConvertBu2() + (*this);
+	// Subtraction without check overflow
+	QInt result = *this;
+	result.sub(A);
 
-	//Check overflow
-	//vi du: A-B thì A va (-B)(so bu 2 cua B) cung dau ma cho ket qua trai dau
-	if (!B.toConvertBu2().isNegative() && !isNegative() && result.isNegative())
-	{
-		throw("Overflow");
-	}
-	if (B.toConvertBu2().isNegative() && isNegative() && !result.isNegative())
-	{
-		throw("Overflow");
-	}
 	return result;
 }
 
-bool QInt::operator> (QInt const& B)
+QInt QInt::operator-() const
 {
+	if (*this == MIN_VALUE()) throw "Overflow";
+	
+	return this->toConvertBu2();
+}
+
+bool QInt::operator>(QInt const& B) const
+{
+	if (*this == B) return false;
+	
+	// special case that A and B are not the same sign
 	if (!isNegative() && B.isNegative()) return true;
 	if (isNegative() && !B.isNegative()) return false;
+
+	// special case with MIN included
+	if (B == MIN_VALUE() && *this != MIN_VALUE()) return true;
+	if (B != MIN_VALUE() && *this == MIN_VALUE()) return false;
+
+	// in this case, both A and B are negative number, but not MIN
+	if (isNegative()) return (-*this) < (-B);
+
+	// in this case, both A and B are positive number, or 0
 	for (int i = 0; i < N_UINT; i++)
 	{
-		if (data.int32[i] > B.data.int32[i])
-			return true;
-		if (data.int32[i] < B.data.int32[i])
-			return false;
+		if (data.int32[i] > B.data.int32[i]) return true;
+		if (data.int32[i] < B.data.int32[i]) return false;
 	}
 	
 	return false;
 }
-bool QInt::operator< (QInt const& B) 
+bool QInt::operator<(QInt const& B) const 
 {
-	if (!isNegative() && B.isNegative()) return false;
-	if (isNegative() && !B.isNegative()) return true;
-	for (int i = 0; i < N_UINT; i++)
-	{
-		if (data.int32[i] < B.data.int32[i])
-			return true;
-		if (data.int32[i] > B.data.int32[i])
-			return false;
-	}
-	return false;
+	return !(*this > B || *this == B);
 }
-//Booth’s Multiplication Algorithm
+
+//Booth's Multiplication Algorithm
 QInt QInt::operator* (const QInt& B) const
 {
+	//Mot trong 2 so = 0 thi tra ve ket qua la 0
+	if (B == 0 || *this == 0) return 0;
+
 	//Thuc hien phep nhan M*Q
 	QInt M = *this;
 	QInt Q = B;
 
-	//Mot trong 2 so = 0 thi tra ve ket qua la 0
-	if (B.isZero() || isZero()) return QInt();
+	// check overflow
+	// special case
+	if ((M == MIN_VALUE() && Q == -1) || (Q == MIN_VALUE() && M == -1)) throw ("Overflow");
 
-	//Check overflow
-	/*
-	if ((a == -1) && (x == INT_MIN)) /* `a * x` can overflow
-	if ((x == -1) && (a == INT_MIN)) /* `a * x` (or `a / x`) can overflow
 	// general case
-	if (a > INT_MAX / x) /* `a * x` would overflow ;
-	if ((a < INT_MIN / x)) /* `a * x` would underflow
-	*/
-	
-	if ((M == MIN_VALUE() && Q == -1) || (Q == MIN_VALUE() && M == -1))
-	{
-		throw ("Overflow");
-	}
-
-	if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q)
-	{
-		throw ("Overflow");
-	}
+	if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q) throw ("Overflow");
 
 	QInt A = 0;
-	int k = N_UINT * 32;
+	int k = NUMBER_OF_BIT;
 	int Q1 = 0;
 
 	while (k > 0)
 	{
+		// ignore overflow of addition/subtraction here (by add, sub builtin function)
+		
 		//Q0Q1 = 10 thi A = A - M
 		if (Q.getBit(0) == 1 && Q1 == 0)
 		{
-			A = A - (*this);
+			A.sub(M);
 		}
 		//Q0Q1 = 01 thi A = A + M
 		else if (Q.getBit(0) == 0 && Q1 == 1)
 		{
-			A = A + (*this);
+			A.add(M);
 		}
+		
 		//dich phai [A,Q,Q1]
 		Q1 = Q.getBit(0);
-		Q.SAR(1);
+		Q.SHR(1);
 		Q.setBit(NUMBER_OF_BIT - 1, A.getBit(0));
 		A.SAR(1);
 		k--;
@@ -706,11 +697,9 @@ QInt QInt::operator* (const QInt& B) const
 	string s = A.toBinStr() + Q.toBinStr();
 	
 	QInt result(s, BIN);
-	//check overflow
-	if (result / B != *this)
-	{
-		throw ("Overflow");
-	}
+
+	//check overflow again
+	if (result / B != *this) throw ("Unknown Overflow");
 	
 	return result;
 }
@@ -719,41 +708,35 @@ QInt QInt::operator/ (const QInt& P) const
 {
 	QInt Q = *this;
 	QInt M = P;
-	QInt A = 0;//Q>0 thi gan A=0
+	QInt A = 0;
 
-	if (M.isZero()) throw("divide by 0");
-	if (Q.isZero()) return QInt();
+	if (M == 0) throw("Division by 0");
+	if (Q == 0) return 0;
 
 	//check overflow
-	if (Q == MIN_VALUE() && M == -1 )
-	{
-		throw ("Overflow");
-	}
+	if (Q == MIN_VALUE() && M == -1) throw ("Overflow");
 
-	if (Q.isNegative())
-	{
-		//Q<0 thi gan A=1
-		for (int i = 0; i < N_UINT * 32; i++)
-		{
-			A.setBit(i, 1);
-		}
-	}
-	//Neu so am thi chuyen ve duong
+	// Luu lai dau cua ket qua
+	// ket qua la true (so am) khi va chi khi 1 trong 2 (Q, M) la so am
+	bool resultSign = Q.isNegative() ^ M.isNegative();
+
+	// Chuyen Q, M ve so duong, tat ca phep tinh tinh toan se doi voi so duong
 	if (Q.isNegative()) Q = Q.toConvertBu2();
 	if (M.isNegative()) M = M.toConvertBu2();
 
-	int k = N_UINT * 32;
+	int k = NUMBER_OF_BIT;
 	while (k > 0)
 	{
 		A.SHL(1);
 		A.setBit(0, Q.getBit(NUMBER_OF_BIT - 1));
 		Q.SHL(1);
-		A = A - M;
+		A.sub(M); // bo qua kiem tra tran so
+
 		//Neu A<0: Q0=0 va A+M=A
 		if (A.isNegative())
 		{
 			Q.setBit(0, 0);
-			A = A + M;
+			A.add(M); // bo qua kiem tra tran so
 		}
 		else
 		{
@@ -762,12 +745,13 @@ QInt QInt::operator/ (const QInt& P) const
 		}
 		k--;
 	}
-	
-	//neu 2 so khac thi chuyen ve so am 
-	if ((*this * P).isNegative())
+
+	// Phuc hoi lai dau cua ket qua
+	if (resultSign)
 	{
 		Q = Q.toConvertBu2();
 	}
+
 	return Q;
 }
 string QInt::div2(string text)
@@ -777,13 +761,16 @@ string QInt::div2(string text)
 	for (int i = 0; i < text.length(); i++)
 	{
 		save = (text[i] - '0') + save * 10;
-		if (save == 0 && i == 0 || i > 0)
-		{
-			result += save / 2 + '0';
-		}
-		save = save / 2;
+		
+		result += save / 2 + '0';
+		save = save % 2;
 	}
-	return result;
+	
+	// trim first 0
+	int pos = 0;
+	while (result[pos] == '0') pos++;
+	
+	return result.substr(pos);
 }
 
 string QInt::add2Str(string a, string b)
@@ -805,26 +792,20 @@ string QInt::add2Str(string a, string b)
 			a = '0' + a;
 		}
 	}
+
 	for (int i = a.length() - 1; i >= 0; --i)
 	{
 		int temp = (a[i] - '0') + (b[i] - '0') + numremember;
 		
-		res += (temp % 10) + '0';
 
-		if (temp > 9)
-		{
-			numremember = 1;
-		}
-		else
-		{
-			numremember = 0;
-		}
+		res.insert(res.begin(), (temp % 10) + '0');
+
+		numremember = (temp > 9) ? 1 : 0;
 	}
+
 	//neu la so nho cuoi cung bang 1 thi + them1 vao chuoi
 	if (numremember == 1)
-		res = res + '1';
-	//do chuoi bi nguoc nen chuoi doi nguoc lai
-	reverse(res.begin(), res.end());
+		res.insert(res.begin(), '1');
 
 	return res;
 }
