@@ -169,18 +169,12 @@ QInt QInt::DectoBin(string s)
 QInt QInt::add(QInt const& A)
 {
 	//neu bang 0 + A thi tra ve A
-	if (isZero())
-	{
-		*this = A;
-		return *this;
-	}
-
-	if (A.isZero()) return *this;
+	if (*this == 0) return (*this = A);
 
 	QInt result;
 	bool bit = 0; //giong nhu so nho
 
-	for (int i = 0; i < N_UINT * 32; i++)
+	for (int i = 0; i < NUMBER_OF_BIT; i++)
 	{
 		int temp = bit + A.getBit(i) + getBit(i);
 
@@ -221,43 +215,18 @@ QInt QInt::add(QInt const& A)
 QInt QInt::sub(QInt const& A)
 {
 	// FOR CASE 2 PARAMETER ARE EQUAL (for skip error occurred when call MIN - MIN)
-	if (*this == A) {
-		*this = 0;
-		return *this;
-	}
+	if (*this == A)	return (*this = 0);
 
-	// Alway pass greater parameter to first parameter of addition (to skip bug that cannot convert MIN_VALUE)
-	//QInt result = (A > * this) ? A.toConvertBu2() + (*this) : A + (*this).toConvertBu2();
-	QInt result;
-	if (*this > A) 
-	{
-		result = *this;
-		result.add(A.toConvertBu2());
-	}
-	else {
-		result = A.toConvertBu2();
-		result.add(*this);
-	}
-	
-	*this = result;
-	return *this;
+	QInt result = *this;
+	result.add(A.toConvertBu2());
+
+	return (*this = result);
 }
 bool QInt::isNegative() const
 {
-	return ((this->getBit(N_UINT * 32 - 1)) == 1);
+	return ((this->getBit(NUMBER_OF_BIT - 1)) == 1);
 }
-bool QInt::QInt::isZero() const
-{
-	for (int i = 0; i < N_UINT; i++)
-	{
-		if (this->data.int32[i] != 0)
-		{
-			return false;
-		}
-	}
 
-	return true;
-}
 //str2->>str10
 string QInt::toDecStr()
 {
@@ -321,12 +290,6 @@ bool QInt::operator==(QInt const& other) const
     }
 
     return res;
-}
-
-bool QInt::operator==(long long const& n) const
-{
-    QInt t = n;
-    return (*this == t);
 }
 
 QInt::QInt(long long const& n)
@@ -466,9 +429,6 @@ string QInt::bin2hex(unsigned char const& c)
 
 void QInt::SHL(int count)
 {
-    // debug
-    //cout << "SHL CALLED - " << toString();
-
     for (int i = 0; i < count; ++i)
     {
         for (int j = 0; j < N_UINT; ++j)
@@ -622,6 +582,7 @@ QInt QInt::operator+ (const QInt& A) const
 	{
 		throw("Overflow");
 	}
+
 	return result;
 }
 bool QInt::operator!= (QInt const& B) const
@@ -630,50 +591,57 @@ bool QInt::operator!= (QInt const& B) const
 }
 QInt QInt::toConvertBu2() const
 {
-	if (isZero()) return *this;
-	//MIN can't be converted
-	if (*this == MIN_VALUE()) return *this;
+	//MIN and ZERO can't be converted
+	if (*this == 0 || *this == MIN_VALUE()) return *this;
 
     QInt res;
 	//dao chuoi qua bu 1
 	res = ~(*this);
 
-	QInt temp = 1;
-
     //bu 1 cong them 1 de duoc so bu 2
-	res = res + temp;
+	res = res + 1;
 
 	return res;
 }
 QInt QInt::operator- (const QInt& A) const
 {
+	if ((A < 0) && (A > MAX_VALUE() + *this)) throw("Overflow");
+	if ((A > 0) && (A < MIN_VALUE() + *this)) throw("Overflow");
+
 	// Subtraction without check overflow
 	QInt result = *this;
 	result.sub(A);
 
-	//Check overflow
-	//vi du: A-B thi A va (-B)(so bu 2 cua B) cung dau ma cho ket qua trai dau
-	if (!A.toConvertBu2().isNegative() && !isNegative() && result.isNegative())
-	{
-		throw("Overflow");
-	}
-	if (A.toConvertBu2().isNegative() && isNegative() && !result.isNegative())
-	{
-		throw("Overflow");
-	}
 	return result;
+}
+
+QInt QInt::operator-() const
+{
+	if (*this == MIN_VALUE()) throw "Overflow";
+	
+	return this->toConvertBu2();
 }
 
 bool QInt::operator>(QInt const& B) const
 {
+	if (*this == B) return false;
+	
+	// special case that A and B are not the same sign
 	if (!isNegative() && B.isNegative()) return true;
 	if (isNegative() && !B.isNegative()) return false;
+
+	// special case with MIN included
+	if (B == MIN_VALUE() && *this != MIN_VALUE()) return true;
+	if (B != MIN_VALUE() && *this == MIN_VALUE()) return false;
+
+	// in this case, both A and B are negative number, but not MIN
+	if (isNegative()) return (-*this) < (-B);
+
+	// in this case, both A and B are positive number, or 0
 	for (int i = 0; i < N_UINT; i++)
 	{
-		if (data.int32[i] > B.data.int32[i])
-			return true;
-		if (data.int32[i] < B.data.int32[i])
-			return false;
+		if (data.int32[i] > B.data.int32[i]) return true;
+		if (data.int32[i] < B.data.int32[i]) return false;
 	}
 	
 	return false;
@@ -686,19 +654,19 @@ bool QInt::operator<(QInt const& B) const
 //Booth's Multiplication Algorithm
 QInt QInt::operator* (const QInt& B) const
 {
+	//Mot trong 2 so = 0 thi tra ve ket qua la 0
+	if (B == 0 || *this == 0) return 0;
+
 	//Thuc hien phep nhan M*Q
 	QInt M = *this;
 	QInt Q = B;
 
-	//Mot trong 2 so = 0 thi tra ve ket qua la 0
-	if (B.isZero() || isZero()) return 0;
-
-	//Check overflow
+	// check overflow
 	// special case
 	if ((M == MIN_VALUE() && Q == -1) || (Q == MIN_VALUE() && M == -1)) throw ("Overflow");
 
 	// general case
-	//if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q) throw ("Overflow");
+	if (M > MAX_VALUE() / Q || M < MIN_VALUE() / Q) throw ("Overflow");
 
 	QInt A = 0;
 	int k = NUMBER_OF_BIT;
@@ -731,7 +699,7 @@ QInt QInt::operator* (const QInt& B) const
 	QInt result(s, BIN);
 
 	//check overflow again
-//	if (result / B != *this) throw ("Unknown Overflow");
+	if (result / B != *this) throw ("Unknown Overflow");
 	
 	return result;
 }
@@ -742,8 +710,8 @@ QInt QInt::operator/ (const QInt& P) const
 	QInt M = P;
 	QInt A = 0;
 
-	if (M.isZero()) throw("Division by 0");
-	if (Q.isZero()) return 0;
+	if (M == 0) throw("Division by 0");
+	if (Q == 0) return 0;
 
 	//check overflow
 	if (Q == MIN_VALUE() && M == -1) throw ("Overflow");
@@ -768,7 +736,7 @@ QInt QInt::operator/ (const QInt& P) const
 		if (A.isNegative())
 		{
 			Q.setBit(0, 0);
-			A.add(M);
+			A.add(M); // bo qua kiem tra tran so
 		}
 		else
 		{
@@ -829,16 +797,15 @@ string QInt::add2Str(string a, string b)
 	{
 		int temp = (a[i] - '0') + (b[i] - '0') + numremember;
 		
-		res += (temp % 10) + '0';
+
+		res.insert(res.begin(), (temp % 10) + '0');
 
 		numremember = (temp > 9) ? 1 : 0;
 	}
 
 	//neu la so nho cuoi cung bang 1 thi + them1 vao chuoi
 	if (numremember == 1)
-		res = res + '1';
-	//do chuoi bi nguoc nen chuoi doi nguoc lai
-	reverse(res.begin(), res.end());
+		res.insert(res.begin(), '1');
 
 	return res;
 }

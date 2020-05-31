@@ -36,16 +36,15 @@ int main(int argc, char** argv)
 		QInt tk = tk1 + 1;
 		QInt cz = QInt::MAX_VALUE();
 
-		QInt cc = -100;
-		//tk1.sub(-50);
-		tk1.add(1);
+		QInt cc("-1222222", DEC);
 
 		//cout << tk1.toString();
 		cout << "MIN: " << tk1.exportData(DEC) << endl;
 		cout << "MAX: " << cz.exportData(HEX) << endl;
-		cout << (cc / -20).exportData(HEX);
+		cout << (cc / -20).exportData(HEX) << endl;
 		//cout << (tk1 + cz).toString();
 
+		cout << cc.toDecStr();
 	}
 	catch (const char* msg) {
 		cout << msg << endl;

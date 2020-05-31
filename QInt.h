@@ -72,11 +72,11 @@ public:
 
 	QInt operator+ (const QInt&) const;
 	QInt operator- (const QInt&) const;
+	QInt operator- () const;
 	QInt operator* ( const QInt&) const;
 	QInt operator/ (const QInt&) const;
 
 	bool operator==(QInt const&) const;
-	bool operator==(long long const&) const;
 	bool operator!= (QInt const& B) const;
 	bool operator> (QInt const& B) const;
 	bool operator< (QInt const& B) const;
@@ -102,9 +102,6 @@ private:
 
     // kiem tra so am
     bool isNegative() const;
-
-    //kiem tra bang 0
-    bool isZero() const;
 
     //chuyen doi so qua bu 2
     QInt toConvertBu2() const;
