@@ -50,13 +50,14 @@ string QInt::toBinStr()
     // this code can be accept to all base
     if (*this == 0) return "0";
 
-    stringstream  out;
+    stringstream  out(std::ios_base::app | std::ios_base::in | std::ios_base::out);
 
     for (int j = 0; j < N_UINT; ++j)
     {
         for (int i = 31; i >= 0; --i)
         {
-            out << ((data.int32[j] << (31 - i)) >> 31);
+            int p = ((data.int32[j] << (31 - i)) >> 31);
+			out << p;
         }
     }
 
