@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: g++ build file
+      run: g++ QInt.cpp RWFile.cpp Source.coo -I. -o out
+    - name: Execute program with test 
+      run: ./out ./test/input.txt ./test/user_output.txt
+    - name: Compare output data
+      run: diff -s -Z -b ./test/user_output.txt ./test/sample_output.txt
+    
