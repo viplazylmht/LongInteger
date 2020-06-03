@@ -1,0 +1,23 @@
+name: Testing C/CPP code
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: g++ build file executable...
+      run: g++ QInt.cpp RWFile.cpp Source.cpp -I. -o out
+    - name: Executing program with test... 
+      run: ./out ./test/input.txt ./test/user_output.txt
+    - name: Compare sample output data...
+      run: diff -s -Z -b ./test/user_output.txt ./test/sample_output.txt
+    - name: Cleaning up space...
+      run: rm out ./test/user_output.txt

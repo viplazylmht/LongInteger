@@ -90,6 +90,7 @@ public:
 
     static QInt MIN_VALUE();
     static QInt MAX_VALUE();
+    static int parseInt(string const&);
 
 private:
     //------ utils ------//
@@ -130,9 +131,8 @@ private:
     //str10 qua str2
     QInt DectoBin(string);
 
+    // add, sub QInt without overflow check
 
-public:
-    // add, sub, mul, div QInt without overflow check
     QInt add(QInt const&);
     QInt sub(QInt const&);
 
