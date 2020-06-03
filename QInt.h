@@ -132,6 +132,7 @@ private:
     QInt DectoBin(string);
 
     // add, sub QInt without overflow check
+
     QInt add(QInt const&);
     QInt sub(QInt const&);
 

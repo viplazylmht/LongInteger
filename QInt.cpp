@@ -223,6 +223,7 @@ QInt QInt::sub(QInt const& A)
 
 	return (*this = result);
 }
+
 bool QInt::isNegative() const
 {
 	return ((this->getBit(NUMBER_OF_BIT - 1)) == 1);

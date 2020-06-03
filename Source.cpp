@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-
+  
 	// RWFile rw("input.txt", "output.txt");
 
 	// rw.Start();
