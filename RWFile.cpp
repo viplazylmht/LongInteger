@@ -51,7 +51,11 @@ bool RWFile::Start()
 		count++;
 		if (line.length() <= 0 || line[0] == '#') continue;
 
+		// remove 'r' at end of line if break line is CRLF (only affect on unix/linux because them use CR instead)
+		if (line.at(line.length() - 1) == '\r') line = line.substr(0, line.length() - 1);
+		
 		string result;
+
 		bool check = ExecALine(line, result);
 		if (check)
 		{
@@ -72,7 +76,7 @@ bool RWFile::Start()
 bool RWFile::ExecALine(const string& line, string& result)
 {
 	bool res = true;
-	vector<string> tokens = Tokenlizer(line);
+	vector<string> tokens = Tokenlizer(line, SEPERATOR);
 
 	QInt* t1 = nullptr;
 	QInt* t2 = nullptr;

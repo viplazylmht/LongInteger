@@ -12,7 +12,8 @@ class RWFile
 {
 public:
 	static const char SEPERATOR = ' ';
-	static vector<string> Tokenlizer(string const& line, char SEPERATOR = SEPERATOR);
+	static vector<string> Tokenlizer(string const& line, char SEPERATOR);
+	static int parseInt(string const&);
 
 private:
 	string filein;
@@ -27,7 +28,6 @@ public:
 	bool ExecALine(const string& line, string& result);
 	bool WriteFile();
 
-	int parseInt(string const&);
 	bool isOperator(string const&, int base = 10);
 };
 

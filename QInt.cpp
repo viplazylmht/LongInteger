@@ -574,7 +574,7 @@ QInt QInt::operator+ (const QInt& A) const
 	result.add(A);
 
 	//Check overflow
-	//vi du: A+B thì A,B cung dau ma cho ket qua trai dau
+	//vi du: A+B thï¿½ A,B cung dau ma cho ket qua trai dau
 	if (!A.isNegative() && !isNegative()&& result.isNegative())
 	{
 		throw("Overflow");
@@ -813,11 +813,24 @@ string QInt::add2Str(string a, string b)
 string QInt::mul2Str(string a, string b)
 {
 	//chuyen chuoi qua so
-	int ka = atoi(a.c_str());
-	int kb = atoi(b.c_str());
+	int kb = 1;
 
-	if (ka == 0 || kb == 0)//phep nhan neu 1 trong 2 so bang 0 thi ket qua = 0
+	try {
+		kb = parseInt(b);
+		int ka = parseInt(a);
+
+		if (ka == 0 || kb == 0) //phep nhan neu 1 trong 2 so bang 0 thi ket qua = 0
+			return "0";
+	}
+	catch (std::invalid_argument const& e)
+	{
 		return "0";
+	}
+	catch (std::out_of_range const& e)
+	{
+		// do nothing because a is out of range int
+		// b only take 2 (number) to parameter
+	}
 
 	string res = a;
 	
@@ -843,3 +856,19 @@ string QInt::Power(unsigned int a, unsigned int n)
 	return res;
 }
 
+int QInt::parseInt(string const& intStr)
+{
+	try
+	{
+		int i = std::stoi(intStr);
+		return i;
+	}
+	catch (std::invalid_argument const& e)
+	{
+		throw e;
+	}
+	catch (std::out_of_range const& e)
+	{
+		throw e;
+	}
+}

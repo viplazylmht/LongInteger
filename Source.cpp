@@ -23,12 +23,12 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	//RWFile rw("input.txt", "output.txt");
+	// RWFile rw("input.txt", "output.txt");
 
-	//rw.Start();
-	//rw.WriteFile();
+	// rw.Start();
+	// rw.WriteFile();
 
-	//return 0;
+	// return 0;
 
 	try {
 		QInt tk1 = QInt::MIN_VALUE();
