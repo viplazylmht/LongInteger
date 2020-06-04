@@ -65,7 +65,8 @@ bool RWFile::Start()
 		{
 			stringstream exeption;
 			exeption << "ERROR Line " << count << ": " << result;
-			this->results.push_back(exeption.str());
+			//this->results.push_back(exeption.str());
+			this->results.push_back(string("0"));
 		}
 	}
 

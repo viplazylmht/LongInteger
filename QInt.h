@@ -22,12 +22,12 @@ public:
     // dung union de int8 va int32 tro cung 1 vung nho
     union {
 
-        // bug cuc manh o int8, vui long khong xai truc tiep, hay xem ham byteAt giai thich (doi voi trinh bien dich cua windows, g++)
+        // vui long khong xai truc tiep int8, hay xem ham byteAt giai thich (khong dung doi voi windows, unix/linux)
         unsigned char int8[N_BYTE];
         unsigned int int32[N_UINT];
 
         unsigned char& byteAt(int pos) {
-            // use this funtion only when machine use Big Endian by default
+            // use this funtion only when machine use Little Endian by default
             // for more infomation, see this answer: https://stackoverflow.com/a/47335692
              
             int mod = pos % 4;

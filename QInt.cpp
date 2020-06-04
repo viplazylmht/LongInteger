@@ -607,8 +607,8 @@ QInt QInt::toConvertBu2() const
 }
 QInt QInt::operator- (const QInt& A) const
 {
-	if ((A < 0) && (A > MAX_VALUE() + *this)) throw("Overflow");
-	if ((A > 0) && (A < MIN_VALUE() + *this)) throw("Overflow");
+	if ((A < 0) && (*this > MAX_VALUE() + A)) throw("Overflow");
+	if ((A > 0) && (*this < MIN_VALUE() + A)) throw("Overflow");
 
 	// Subtraction without check overflow
 	QInt result = *this;
