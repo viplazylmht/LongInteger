@@ -391,7 +391,7 @@ char QInt::hex2bin(char c)
 
     if (c >= 'a' && c <= 'f')
     {
-        res = 10 + c - 'A';
+        res = 10 + c - 'a';
         return res;
     }
 
